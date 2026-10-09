@@ -1,0 +1,61 @@
+services:
+  filemanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: auma-file-manager:latest
+    container_name: auma-file-manager
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      STORAGE_ROOT: /data
+      DATA_DIR: /app-data
+      STATIC_DIR: /app/static
+    ports:
+      # Наружу отдаём только localhost — снаружи доступ идёт через reverse proxy.
+      # Если прокси нет и нужен прямой доступ, замените на "${APP_PORT:-8080}:8000".
+      - "127.0.0.1:${APP_PORT:-8080}:8000"
+    volumes:
+      # Файлы пользователей. На Linux можно заменить на bind-mount, например:
+      #   - /srv/files:/data
+      - files-data:/data
+      # База данных и сессии — отдельный том, чтобы не смешивать с файлами.
+      - app-data:/app-data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status == 200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+
+  # Обратный прокси с автоматическим HTTPS.
+  # Включите, указав свой домен в Caddyfile, и запускайте:
+  #   docker compose --profile proxy up -d
+  caddy:
+    image: caddy:2-alpine
+    container_name: auma-caddy
+    restart: unless-stopped
+    profiles:
+      - proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - filemanager
+
+volumes:
+  files-data:
+  app-data:
+  caddy-data:
+  caddy-config:

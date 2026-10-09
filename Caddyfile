@@ -1,0 +1,35 @@
+# Caddy: автоматический HTTPS через Let's Encrypt.
+# Замените files.example.com на ваш домен и убедитесь,
+# что A-запись домена указывает на IP этого сервера.
+
+files.example.com {
+	encode zstd gzip
+
+	# Загрузка крупных файлов: без ограничения времени на ответ.
+	reverse_proxy filemanager:8000 {
+		transport http {
+			read_timeout 0
+			write_timeout 0
+		}
+	}
+
+	# Базовые заголовки безопасности.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	log {
+		output file /data/access.log
+		format json
+	}
+}
+
+# Вариант без домена (доступ по IP, самоподписанный сертификат):
+# :443 {
+# 	tls internal
+# 	reverse_proxy filemanager:8000
+# }

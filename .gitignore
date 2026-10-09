@@ -1,0 +1,49 @@
+# Секреты — никогда не коммитим
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Данные приложения и хранилище (локальный запуск без Docker)
+data/
+app-data/
+backend/data/
+backend/app-data/
+*.db
+*.db-wal
+*.db-shm
+*.part
+
+# Редакторы и ОС
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Прочее
+*.log
+
+# Временные каталоги, оставшиеся от неудачных установок
+.piptmp/
+.wheels/
+probe-*/
