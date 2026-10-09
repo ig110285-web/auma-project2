@@ -68,7 +68,8 @@ class ChangePasswordRequest(BaseModel):
 
 
 @router.get("/files")
-def list_files(path: str = Query(default="")) -> dict:
+def list_files(path: str = Query(default=""),
+               user: User = Depends(current_user)) -> dict:
     """Содержимое каталога плюс информация о текущем пути."""
     try:
         entries = storage.list_dir(path)
@@ -84,7 +85,8 @@ def list_files(path: str = Query(default="")) -> dict:
 
 
 @router.get("/stats")
-def stats(path: str = Query(default="")) -> dict:
+def stats(path: str = Query(default=""),
+          user: User = Depends(current_user)) -> dict:
     """Размер и количество файлов в поддереве."""
     try:
         total, count = storage.storage_usage(path)
@@ -101,7 +103,8 @@ def stats(path: str = Query(default="")) -> dict:
 
 @router.get("/search")
 def search(q: str = Query(min_length=1, max_length=128),
-           path: str = Query(default="")) -> dict:
+           path: str = Query(default=""),
+           user: User = Depends(current_user)) -> dict:
     """Рекурсивный поиск по подстроке в имени."""
     needle = q.lower()
     try:

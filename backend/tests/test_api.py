@@ -34,6 +34,37 @@ def test_files_require_auth(client):
     assert response.status_code == 401
 
 
+@pytest.mark.parametrize(
+    "method,url",
+    [
+        ("get", "/api/files"),
+        ("get", "/api/stats"),
+        ("get", "/api/search?q=test"),
+        ("get", "/api/download?path=x.txt"),
+        ("get", "/api/preview?path=x.txt"),
+        ("get", "/api/me"),
+        ("get", "/api/audit"),
+        ("post", "/api/folders"),
+        ("post", "/api/rename"),
+        ("post", "/api/move"),
+        ("post", "/api/delete"),
+        ("post", "/api/upload"),
+        ("post", "/api/download-zip"),
+    ],
+)
+def test_every_endpoint_requires_auth(client, method, url):
+    """Ни один эндпоинт не должен отвечать анонимному клиенту.
+
+    Регрессия: однажды маршруты чтения (/files, /stats, /search, /preview)
+    остались без Depends(current_user) и отдавали данные без входа.
+    """
+    response = getattr(client, method)(url)
+    assert response.status_code == 401, (
+        f"{method.upper()} {url} доступен без авторизации "
+        f"(получен {response.status_code})"
+    )
+
+
 def test_upload_requires_auth(client):
     response = client.post("/api/upload", files={"files": ("a.txt", b"x")})
     assert response.status_code == 401
