@@ -47,3 +47,7 @@ desktop.ini
 .piptmp/
 .wheels/
 probe-*/
+
+# Скриншоты проверки дизайна и профиль Chrome
+design-*.png
+.chrome-profile/
